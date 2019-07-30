@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name     = "puma-plugin-statsd"
-  spec.version  = "0.1.0"
+  spec.version  = "0.2.0"
   spec.author   = "James Healy"
   spec.email    = "james@yob.id.au"
 
@@ -11,7 +11,8 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb", "README.md", "CHANGELOG.md", "MIT-LICENSE"]
 
   spec.add_runtime_dependency "puma", ">= 3.12", "< 5"
-  spec.add_runtime_dependency "json"
+  spec.add_runtime_dependency "oj"
+  spec.add_runtime_dependency "statsd-instrument"
 
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"

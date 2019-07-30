@@ -3,12 +3,13 @@
 [Puma][puma] integration with [statsd](statsd) for easy tracking of key metrics
 that puma can provide:
 
-* puma.workers
-* puma.booted_workers
-* puma.running
 * puma.backlog
+* puma.running
 * puma.pool_capacity
 * puma.max_threads
+* puma.workers
+* puma.booted_workers (for puma instances running in clustered mode)
+* puma.old_workers (for puma instances running in clustered mode)
 
   [puma]: https://github.com/puma/puma
   [statsd]: https://github.com/etsy/statsd
@@ -37,55 +38,12 @@ plugin :statsd
 
 ## Usage
 
-Ensure you have an environment variable set that points to a statsd host, then boot your puma app as usual.  Optionally you may specify a port (default is 8125). 
-
-```
-STATSD_HOST=127.0.0.1 bundle exec puma
-```
-
-```
-STATSD_HOST=127.0.0.1 STATSD_PORT=9125 bundle exec puma
-```
-
-### Datadog Integration
-
-metric tags are a non-standard addition to the statsd protocol, supported by
-the datadog "dogstatsd" server.
-
-Should you be reporting the puma metrics to a dogstatsd server, you can set
-tags via the following two environment variables.
-
-`MY_POD_NAME` adds a `pod_name` tag to the metrics. The `MY_POD_NAME`
-environment variable is recommended in the datadog kubernetes setup
-documentation, and for puma apps deployed to kubernetes it's very helpful to
-have the option to report on specific pods.
-
-You can set it on your pods like this:
-
-```yaml
-env:
-  - name: MY_POD_NAME
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.name
-```
-
-`STATSD_GROUPING` adds a `grouping` tag to the metrics, with a value equal to
-the environment variable value. This is particularly helpful in a kubernetes
-deployment where each pod has a unique name but you want the option to group
-metrics across all pods in a deployment. Setting this on the pods in a
-deployment might look something like:
-
-```yaml
-env:
-  - name: STATSD_GROUPING
-    value: deployment-foo
-```
+Ensure you have an `STATSD_ADDR` environment variable set that points to a statsd host, then boot your puma app as usual.
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at
-https://github.com/yob/puma-plugin-statsd.
+https://github.com/luigisbox/puma-plugin-statsd.
 
 ## Testing the data being sent to statsd
 
@@ -100,19 +58,20 @@ Start puma:
 Throw some traffic at it, either with curl or a tool like ab:
 
     curl http://127.0.0.1:9292/
-    ab -n 10000 -c 20 http://127.0.0.1:9292/ 
+    ab -n 10000 -c 20 http://127.0.0.1:9292/
 
 Watch the output of the UDP server process - you should see statsd data printed to stdout.
 
 ## Acknowledgements
 
-This gem is a fork of the excellent [puma-plugin-systemd][puma-plugin-systemd] by
+This gem is a fork of [puma-plugin-statsd](puma-plugin-statsd), which itself is a fork of the excellent [puma-plugin-systemd][puma-plugin-systemd] by
 Samuel Cochran.
 
   [puma-plugin-systemd]: https://github.com/sj26/puma-plugin-systemd
 
 Other puma plugins that were helpful references:
 
+* [yabeda-puma-plugin](https://github.com/yabeda-rb/yabeda-puma-plugin)
 * [puma-heroku](https://github.com/evanphx/puma-heroku)
 * [tmp-restart](https://github.com/puma/puma/blob/master/lib/puma/plugin/tmp_restart.rb)
 

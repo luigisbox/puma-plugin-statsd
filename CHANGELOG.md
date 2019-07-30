@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.2.0 2019-07-30
+
+* Statsd integration is now via `statsd-instrument` dependency
+* Statsd metrics can be prefixed with environment variables
+* Puma stats polling interval is now configurable
+* Removed DataDog integration
+
 ## 0.1.0 2019-07-06
 
 * The statsd port is now configurable
