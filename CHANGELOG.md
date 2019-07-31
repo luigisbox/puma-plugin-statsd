@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.1 2019-07-31
+
+* Metrics are sent including unique key for puma instance to allow monitoring multiple service instances at the same time
+
 ## 0.2.0 2019-07-30
 
 * Statsd integration is now via `statsd-instrument` dependency

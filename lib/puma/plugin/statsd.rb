@@ -1,5 +1,6 @@
 # coding: utf-8, frozen_string_literal: true
 
+require 'securerandom'
 require 'puma'
 require 'puma/plugin'
 require 'statsd-instrument'
@@ -62,6 +63,7 @@ end
 Puma::Plugin.create do
   def initialize(loader)
     @loader = loader
+    @instance_uuid = SecureRandom.uuid
     @stats_metric_prefix = ENV.fetch('PUMA_STATS_METRIC_PREFIX') { '' }
     @stats_polling_interval = ENV.fetch('PUMA_STATS_POLLING_INTERVAL') { 5 }.to_i
   end
@@ -85,15 +87,15 @@ Puma::Plugin.create do
       begin
         stats = ::PumaStats.new(fetch_stats)
 
-        StatsD.gauge("#{@stats_metric_prefix}puma.backlog", stats.backlog)
-        StatsD.gauge("#{@stats_metric_prefix}puma.running", stats.running)
-        StatsD.gauge("#{@stats_metric_prefix}puma.pool_capacity", stats.pool_capacity)
-        StatsD.gauge("#{@stats_metric_prefix}puma.max_threads", stats.max_threads)
-        StatsD.gauge("#{@stats_metric_prefix}puma.workers", stats.workers)
+        report('backlog', stats.backlog)
+        report('running', stats.running)
+        report('pool_capacity', stats.pool_capacity)
+        report('max_threads', stats.max_threads)
+        report('workers', stats.workers)
 
         if stats.clustered?
-          StatsD.gauge("#{@stats_metric_prefix}puma.booted_workers", stats.booted_workers)
-          StatsD.gauge("#{@stats_metric_prefix}puma.old_workers", stats.old_workers)
+          report('booted_workers', stats.booted_workers)
+          report('old_workers', stats.old_workers)
         end
       rescue StandardError => e
         @launcher.events.error("! statsd: notify stats failed:\n  #{e.to_s}\n  #{e.backtrace.join("\n    ")}")
@@ -101,5 +103,9 @@ Puma::Plugin.create do
         sleep @stats_polling_interval
       end
     end
+  end
+
+  def report(key, value)
+    StatsD.gauge("#{@stats_metric_prefix}puma.#{@instance_uuid}.#{key}", value)
   end
 end
